@@ -67,7 +67,7 @@
     const datas = await Promise.all(
       Array(30)
         .fill(0)
-        .map((_, i) => fetch(`https://ysm.sh/js30/${getNum(i)}`))
+        .map((_, i) => fetch(getNum(i)))
     )
     state.arr = datas.map(data => data.status !== '404')
   })()
