@@ -16,6 +16,13 @@
     text-decoration: none;
     outline: none;
     color: black;
+    font-size: 20px;
+  }
+  .yet {
+    background-color: crimson;
+  }
+  .done {
+    background-color: chartreuse;
   }
   a:hover {
     background: black;
@@ -30,20 +37,38 @@
 
 <script type="module">
   import { html, render } from 'https://unpkg.com/lit-html?module'
-  ;(() => {
-    const app = () => html`
+  ;(async () => {
+    const app = ({ arr }) => html`
       ${Array(30)
         .fill(0)
         .map(
           (v, i) =>
             html`
-              <a href=${`/js30/${getNum(i)}`}>
+              <a href=${getNum(i)} class=${arr[i] ? 'done' : 'yet'}>
                 ${getNum(i)}
               </a>
             `
         )}
     `
     const getNum = i => (i < 9 ? `0${i + 1}` : i + 1)
-    render(app(), document.body)
+
+    const state = new Proxy(
+      {},
+      {
+        set: (_state, key, value) => {
+          _state[key] = value
+          render(app(_state), document.body)
+          return true
+        }
+      }
+    )
+
+    state.arr = Array(30).fill(false)
+    const datas = await Promise.all(
+      Array(30)
+        .fill(0)
+        .map((_, i) => fetch(`https://ysm.sh/js30/${getNum(i)}`))
+    )
+    state.arr = datas.map(data => data.status !== '404')
   })()
 </script>
