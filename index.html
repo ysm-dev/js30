@@ -1,0 +1,49 @@
+<style>
+  body {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  a {
+    display: grid;
+    box-sizing: border-box;
+    margin: 10px;
+    height: 50px;
+    border: 2px solid black;
+    border-radius: 20px;
+    text-align: center;
+    align-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
+    color: black;
+  }
+  a:hover {
+    background: black;
+    color: white;
+    text-decoration: none;
+  }
+  a:active {
+    color: black;
+    text-decoration: none;
+  }
+</style>
+
+<script type="module">
+  import { html, render } from 'https://unpkg.com/lit-html?module'
+  ;(() => {
+    const app = () => html`
+      ${Array(30)
+        .fill(0)
+        .map(
+          (v, i) =>
+            html`
+              <a href=${`js30/${getNum(i)}`}>
+                ${getNum(i)}
+              </a>
+            `
+        )}
+    `
+    const getNum = i => (i < 9 ? `0${i + 1}` : i + 1)
+    render(app(), document.body)
+  })()
+</script>
