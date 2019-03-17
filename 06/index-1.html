@@ -31,42 +31,59 @@
 
       const App = () => {
         const [value, setValue] = useState('')
+        const [cities, setCities] = useState([])
+        const [filteredCities, setFilteredCities] = useState([])
+        useEffect(() => {
+          !(async () => {
+            const data = await (await fetch(endpoint)).json()
+            // let dataX2 = []
+            // Array(2)
+            //   .fill()
+            //   .forEach(() => dataX2.push(...data))
+            setCities([...data])
+            setFilteredCities([...data])
+          })()
+        }, [])
+        // const debounced = _.debounce(value => setValue(value))
+        useEffect(() => {
+          requestAnimationFrame(() =>
+            setFilteredCities(
+              cities.filter(
+                city =>
+                  value === '' || findMatches(value, city.city, city.state)
+              )
+            )
+          )
+        }, [value])
         return (
           <form className="search-form">
             <input
               type="text"
               className="search"
               placeholder="City or State"
+              value={value}
               onChange={e => {
                 setValue(e.target.value)
+                setFilteredCities([])
               }}
             />
             <ul className="suggestions">
-              <CityItems value={value} />
+              <CityItems cities={filteredCities} value={value} />
             </ul>
           </form>
         )
       }
 
-      const CityItems = ({ value }) => {
-        const [cities, setCities] = useState([])
-        useEffect(() => {
-          !(async () => {
-            setCities([...(await (await fetch(endpoint)).json())])
-          })()
-        }, [])
-        return cities
-          .filter(
-            city => value === '' || findMatches(value, city.city, city.state)
-          )
-          .map(city => (
-            <CityItem
-              key={`${city.city}${city.state}`}
-              {...city}
-              value={value}
-            />
+      const CityItems = _.memoize(
+        ({ cities, value }) => {
+          console.log({ length: cities.length, value })
+          return cities.map(city => (
+            <CityItem key={`${city.city}`} {...city} value={value} />
           ))
-      }
+        },
+        ({ cities, value }) =>
+          cities.length === 0 ? false : `${cities.length}${value}`
+      )
 
       const CityItem = _.memoize(
         ({ city, state, population, value }) => {
@@ -85,7 +102,7 @@
 
       const HighlightName = _.memoize(
         ({ name, value }) => {
-          const regex = new RegExp(escapeRegex(value), 'gi')
+          const regex = new RegExp(value, 'gi')
           const splited = name.split(regex)
           if (splited.length <= 1 || value === '') return name
           const matches = name.match(regex)
@@ -108,7 +125,7 @@
 
       const findMatches = _.memoize(
         (value, city, state) => {
-          const regex = new RegExp(escapeRegex(value), 'gi')
+          const regex = new RegExp(value, 'gi')
           return city.match(regex) || state.match(regex)
         },
         (value, city, state) => `${value}${city}${state}`
@@ -117,9 +134,6 @@
       const numberWithCommas = _.memoize(x =>
         x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
       )
-
-      const escapeRegex = string =>
-        string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
       render(<App />, document.querySelector('#app'))
     </script>
